@@ -11,6 +11,7 @@ testNEV = 'E:\TEST_NWB\CLASE001\NWB-data\EventData';
 testMED = 'E:\TEST_NWB\CLASE001\NWB-data\MEDData\EventData.medd';
 
 %%
+cd(testNEV)
 [TimeStamps1, EventIDs1, TTLs1, Extras1, EventStrings1, Header1] =...
     Nlx2MatEV( 'Events_0001.nev', [1 1 1 1 1], 1, 1, []  );
 
@@ -28,3 +29,59 @@ totalNEV = length(EventIDs1) + length(EventIDs2) + length(EventIDs3) + length(Ev
 
 %%
 session = read_MED('E:\TEST_NWB\CLASE001\NWB-data\MEDData\EventData.medd\CSC_0001.ticd',[],[],[],[],'L2_password');
+
+%%
+
+allstrings = cell(length(session.records),1);
+for i = 1:numel(session.records)
+    type_string = session.records{i}.type_string;
+    allstrings{i} = type_string;
+    %
+    %     switch type_string
+    %         case 'Sgmt'
+    %             disp(['Description: ' sess.records{i}.description]);
+    %         case 'NlxP'
+    %             disp(['Start Time: ' sess.records{i}.start_time_string]);
+    %         case 'Note'
+    %             disp(['Text: ' sess.records{i}.text]);
+    %     end
+    %     disp(newline);
+end
+
+%%  Check number of continuga with the number of start and stops
+
+allEventsEv = [EventStrings1 ; EventStrings2 ; EventStrings3 ; EventStrings4];
+allEventsTS = [TimeStamps1' ; TimeStamps2' ; TimeStamps3' ; TimeStamps4']/1000000;
+allEventsTSst = allEventsTS(matches(allEventsEv,'Starting Recording'));
+
+numContingua = height(session.contigua);
+
+% Get indices for starts
+
+offTsec = round(diff(allEventsTSst)*32000)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
