@@ -2,13 +2,22 @@
 
 % NEV read: C:\Users\Admin\Documents\Github\NLX-Event-Viewer\NLX_IO_Code
 % read MED: C:\Users\Admin\DHN\read_MED
+name = getenv('COMPUTERNAME');
+
+switch name
+    case 'DESKTOP-FAGRV5G'
+        testNEV = 'D:\TESTMED\EventData';
+        testMED = 'D:\TESTMED\MEDData\EventData.medd';
+    case 'Blah'
+        testNEV = 'E:\TEST_NWB\CLASE001\NWB-data\EventData';
+        testMED = 'E:\TEST_NWB\CLASE001\NWB-data\MEDData\EventData.medd';
+end
+
 
 
 
 %% 
-testNEV = 'E:\TEST_NWB\CLASE001\NWB-data\EventData';
 
-testMED = 'E:\TEST_NWB\CLASE001\NWB-data\MEDData\EventData.medd';
 
 %%
 cd(testNEV)
@@ -28,7 +37,7 @@ cd(testNEV)
 totalNEV = length(EventIDs1) + length(EventIDs2) + length(EventIDs3) + length(EventIDs4);
 
 %%
-session = read_MED('E:\TEST_NWB\CLASE001\NWB-data\MEDData\EventData.medd\CSC_0001.ticd',[],[],[],[],'L2_password');
+session = read_MED('D:\TESTMED\MEDData\EventData.medd\CSC_0001.ticd',[],[],[],[],'L2_password');
 
 %%
 
@@ -53,12 +62,19 @@ end
 allEventsEv = [EventStrings1 ; EventStrings2 ; EventStrings3 ; EventStrings4];
 allEventsTS = [TimeStamps1' ; TimeStamps2' ; TimeStamps3' ; TimeStamps4']/1000000;
 allEventsTSst = allEventsTS(matches(allEventsEv,'Starting Recording'));
+diST = diff(allEventsTSst);
+diST2 =  sum(diST > 0)
+
+allEventsTSstp = allEventsTS(matches(allEventsEv,'Stopping Recording'));
+diSTP = diff(allEventsTSstp);
+diSTP2 =  sum(diSTP > 0)
+
 
 numContingua = height(session.contigua);
 
 % Get indices for starts
 
-offTsec = round(diff(allEventsTSst)*32000)
+offTsec = round(diff(allEventsTSst)*32000);
 
 
 
