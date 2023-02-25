@@ -1,53 +1,51 @@
 function [outTABLE3] = NLX2MED_recs_v3(Nlx_events, Nlx_evt_times, MED_session)
 
-    outTABLE = table(Nlx_events , Nlx_evt_times,'VariableNames',{'NLX_Events' , 'NLX_Times'});
-    outTABLE.MED_REC = cell(height(Nlx_events),1);
-    outTABLE.MED_IND = nan(height(Nlx_events),1);
-    outTABLE.MED_TIME = zeros(height(Nlx_events),1,"int64");
-    outTABLE.TIME_DIFF = zeros(height(Nlx_events),1,"int64");
-    outTABLE.contiguon = zeros(height(Nlx_events),1);
-    outTABLE.NLX_Times = int64(outTABLE.NLX_Times * 1e6);
+outTABLE = table(Nlx_events , Nlx_evt_times,'VariableNames',{'NLX_Events' , 'NLX_Times'});
+outTABLE.MED_REC = cell(height(Nlx_events),1);
+outTABLE.MED_IND = nan(height(Nlx_events),1);
+outTABLE.MED_TIME = zeros(height(Nlx_events),1,"int64");
+outTABLE.TIME_DIFF = zeros(height(Nlx_events),1,"int64");
+outTABLE.contiguon = zeros(height(Nlx_events),1);
+outTABLE.NLX_Times = int64(outTABLE.NLX_Times * 1e6);
 
-    % get time diff based on first TTL / NlxP event
-    typeStrings = cellfun(@(x) x.type_string,MED_session.records ,'UniformOutput' , false);
-    first_med_NlxP_idx = find(matches(typeStrings, 'NlxP'),1,'first');
+% get time diff based on first TTL / NlxP event
+typeStrings = cellfun(@(x) x.type_string,MED_session.records ,'UniformOutput' , false);
+first_med_NlxP_idx = find(matches(typeStrings, 'NlxP'),1,'first');
 
-    first_nlx_TTL_idx = find(contains(outTABLE.NLX_Events,'TTL Input'),1,'first');
+first_nlx_TTL_idx = find(contains(outTABLE.NLX_Events,'TTL Input'),1,'first');
 
-    nlx2med_time_diff = outTABLE.NLX_Times(first_nlx_TTL_idx) -...
-        MED_session.records{first_med_NlxP_idx}.start_time;
+nlx2med_time_diff = outTABLE.NLX_Times(first_nlx_TTL_idx) -...
+    MED_session.records{first_med_NlxP_idx}.start_time;
 
-    % Remove duplicates STARTING
-    startrecIndices = find(matches(outTABLE.NLX_Events,'Starting Recording'));
-    startrecTimes = outTABLE.NLX_Times(startrecIndices);
-    startOffs = diff(startrecTimes);
-    startOffsW = [startOffs ; 5001];
-    startOffsW2 = abs(startOffsW);
+% Remove duplicates STARTING
+startrecIndices = find(matches(outTABLE.NLX_Events,'Starting Recording'));
+startrecTimes = outTABLE.NLX_Times(startrecIndices);
+startOffs = diff(startrecTimes);
+startOffsW = [startOffs ; 5001];
+startOffsW2 = abs(startOffsW);
 %     keepStartIndices = startrecIndices(startOffsW > 0);
-    removStartIndices = startrecIndices(startOffsW2 < 5000);
-    outTABLE2 = outTABLE;
-    outTABLE2(removStartIndices,:) = [];
+removStartIndices = startrecIndices(startOffsW2 < 5000);
+outTABLE2 = outTABLE;
+outTABLE2(removStartIndices,:) = [];
 
-    % Remove duplicates STOPPING
-    stoprecIndices = find(matches(outTABLE2.NLX_Events,'Stopping Recording'));
-    stoprecTimes = outTABLE2.NLX_Times(stoprecIndices);
-    stopOffs = diff(stoprecTimes);
-    stopOffsW = [stopOffs ; 5001];
-    stopOffsW2 = abs(stopOffsW);
+% Remove duplicates STOPPING
+stoprecIndices = find(matches(outTABLE2.NLX_Events,'Stopping Recording'));
+stoprecTimes = outTABLE2.NLX_Times(stoprecIndices);
+stopOffs = diff(stoprecTimes);
+stopOffsW = [stopOffs ; 5001];
+stopOffsW2 = abs(stopOffsW);
 %     keepStartIndices = startrecIndices(startOffsW > 0);
-    removStopIndices = stoprecIndices(stopOffsW2 < 5000);
-    outTABLE3 = outTABLE2;
-    outTABLE3(removStopIndices,:) = [];
+removStopIndices = stoprecIndices(stopOffsW2 < 5000);
+outTABLE3 = outTABLE2;
+outTABLE3(removStopIndices,:) = [];
 
-    % All med times
-    allConStarts = transpose([MED_session.contigua.start_time]);
-    allConEnds = transpose([MED_session.contigua.end_time]);
-    allConStartsNLXof = allConStarts + nlx2med_time_diff;
-    allConEndsNLXof = allConEnds + nlx2med_time_diff;
-    allRecTimes = cellfun(@(x) x.start_time , MED_session.records, 'UniformOutput', true);
-    allMEDRecsof = allRecTimes + nlx2med_time_diff;
-
-   
+% All med times
+allConStarts = transpose([MED_session.contigua.start_time]);
+allConEnds = transpose([MED_session.contigua.end_time]);
+allConStartsNLXof = allConStarts + nlx2med_time_diff;
+allConEndsNLXof = allConEnds + nlx2med_time_diff;
+allRecTimes = cellfun(@(x) x.start_time , MED_session.records, 'UniformOutput', true);
+allMEDRecsof = allRecTimes + nlx2med_time_diff;
 
 % 8 to 10 3500
 % switch through start , stop and port events
@@ -75,7 +73,7 @@ for typeI = 1:3
                 timeDIFF = tmpStopIND - allConEndsNLXof;
                 outTABLE3.TIME_DIFF(stopINDs(si)) = timeDIFF(continguID);
                 outTABLE3.MED_TIME(stopINDs(si)) = MED_session.contigua(continguID).end_time;
-                outTABLE3.MED_REC{stopINDs(si)} = 'contiguon entry';
+                outTABLE3.MED_REC{stopINDs(si)} = 'contiguon exit';
             end
         case 'ttl'
             ttlINDs = find(contains(outTABLE3.NLX_Events,'TTL Input'));
