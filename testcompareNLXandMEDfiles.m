@@ -1,4 +1,6 @@
 % Convert NLX event finder to Funciton from GUI
+% DONE on 4/8/2023
+% NLX_MED_ProcessNLX_Event.mat
 
 
 % Check intuition of code - 

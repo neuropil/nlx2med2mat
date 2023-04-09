@@ -1,4 +1,4 @@
-function [] = NLX_MED_Process(eventFILEdir)
+function [] = NLX_MED_ProcessNLX_Event(eventFILEdir)
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 
