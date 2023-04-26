@@ -25,6 +25,12 @@ if isempty(nevDIRb)
     return
 end
 
+githubLoc = what('nlx2med2mat');
+curLOCpath = githubLoc.path;
+addpath([curLOCpath , filesep , 'NLX_IO_Code'])
+
+
+
 % Check one folder up for a startUPfold.mat file
 eventLOCparts = split(rawSEL,filesep);
 oneFoldback = strjoin(eventLOCparts(1:end-1),filesep);

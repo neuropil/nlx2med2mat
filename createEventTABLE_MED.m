@@ -1,0 +1,111 @@
+function [] = createEventTABLE_MED(mainCaseDir)
+%UNTITLED Summary of this function goes here
+%   Detailed explanation goes here
+
+
+addpath('C:\Users\Admin\DHN\read_MED\')
+
+med_dataLoc = [mainCaseDir , filesep , 'MED_Processing'];
+cd(med_dataLoc)
+
+sessionFolderL = getFOLDERlist(med_dataLoc);
+
+medSessionAll = cell(length(sessionFolderL),1);
+tmpSession = struct;
+
+sessINFOmed = zeros(length(sessionFolderL),7);
+sessID = cell(length(sessionFolderL),1);
+
+for si = 1:length(sessionFolderL)
+
+    tmpFolder = sessionFolderL{si};
+    tmpFolderLoc = [med_dataLoc , filesep , tmpFolder];
+
+    cd(tmpFolderLoc)
+
+    ticdList = getTicdList(tmpFolderLoc);
+
+    tmpSessI = ticdList{1};
+
+    readMEDID = [tmpFolderLoc , filesep , tmpSessI];
+
+    MED_session = read_MED(readMEDID,[],[],[],[],'L2_password');
+
+    typeStringsA = cellfun(@(x) x.type_string, MED_session.records ,'UniformOutput' , false);
+
+    first_med_Sgmt_idx = find(matches(typeStringsA, 'Sgmt'));
+
+    if numel(first_med_Sgmt_idx) > 1
+        first_med_Sgmt_idx = first_med_Sgmt_idx(end);
+    end
+
+    first_med_NlxP_idx = first_med_Sgmt_idx + 1;
+
+    % first_med_NlxP_idx = find(matches(typeStringsA, 'NlxP'),1,'first');
+    medSessionS = MED_session.records(first_med_NlxP_idx:end);
+
+    typeValue =   cellfun(@(x) x.value,       medSessionS ,'UniformOutput' , true);
+
+    allRecTimes = cellfun(@(x) x.start_time , medSessionS, 'UniformOutput', true);
+
+    sessDurMin_c = ((double(allRecTimes(end))/1000000) - (double(allRecTimes(1))/1000000))/60;
+
+    sessINFOmed(si,1) = si;
+    sessINFOmed(si,2) = first_med_NlxP_idx;
+    sessINFOmed(si,3) = length(typeStringsA);
+    sessINFOmed(si,4) = typeValue(1);
+    sessINFOmed(si,5) = typeValue(end);
+    sessINFOmed(si,6) = length(medSessionS);
+    sessINFOmed(si,7) = sessDurMin_c;
+
+    tmpSession.Tstamps = allRecTimes;
+    tmpSession.EventVals = typeValue;
+    tmpSession.SessNumber = si;
+
+    medSessionAll{si} = tmpSession;
+    sessID{si} = tmpFolder;
+
+
+end
+
+medInfoTable = array2table(sessINFOmed,'VariableNames',{'Session#',...
+    'StartIND_N','StopIND_N','StartName_N','StopName_N','EventCount_N',...
+    'SessMinutes_N'});
+
+medInfoTable = addvars(medInfoTable,sessID,'Before',"StartIND_N");
+
+sess_dataLoc = [mainCaseDir , filesep , 'NWBProcessing\Session_Data'];
+cd(sess_dataLoc)
+
+save("allSessionData.mat","medInfoTable","medSessionAll",'-append');
+
+
+
+
+end
+
+
+
+
+function [sessList] = getFOLDERlist(currentLOC)
+
+cd(currentLOC)
+tmpDir = dir;
+folderL1 = {tmpDir.name};
+folderL2 = folderL1(~ismember(folderL1,{'.','..'}));
+sessList = folderL2;
+
+end
+
+
+function [ticdList] = getTicdList(curTICDloc)
+
+cd(curTICDloc)
+tmpDir = dir;
+folderL1 = {tmpDir.name};
+folderL2 = folderL1(~ismember(folderL1,{'.','..'}));
+
+tmpTICDfind = contains(folderL2,'.ticd');
+ticdList = folderL2(tmpTICDfind);
+
+end
