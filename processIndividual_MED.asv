@@ -57,6 +57,8 @@ for tl = 1:length(ticdList)
 
     readMEDID = [sessionFolderL , filesep , tmpSessI];
 
+    disp(readMEDID)
+
     MED_session = read_MED(readMEDID,[],[],[],[],'L2_password');
 
     % typeStringsA = cellfun(@(x) x.type_string, MED_session.records ,'UniformOutput' , false);

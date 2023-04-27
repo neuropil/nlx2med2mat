@@ -53,7 +53,7 @@ tsCHECK = zeros(length(ticdList),1,'int32');
 
 for tl = 1:length(ticdList)
 
-    tmpSessI = ticdList{1};
+    tmpSessI = ticdList{tl};
 
     readMEDID = [sessionFolderL , filesep , tmpSessI];
 
@@ -80,6 +80,8 @@ for tl = 1:length(ticdList)
 
 
 end
+
+
 
 % if numel(first_med_Sgmt_idx) > 1
 %     first_med_Sgmt_idx = first_med_Sgmt_idx(end);
